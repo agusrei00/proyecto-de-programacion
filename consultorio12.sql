@@ -1,5 +1,4 @@
 -- Intentar cambiar al contexto de la base de datos maestra
--- Intentar cambiar al contexto de la base de datos maestra
 USE master;
 GO
 
@@ -18,7 +17,7 @@ GO
 CREATE TABLE ingreso (
     id INT IDENTITY(1,1) PRIMARY KEY,
     username NVARCHAR(255) NOT NULL,
-	hashed_password NVARCHAR(255) NOT NULL,  -- Almacenar el hash de la contrase馻
+	hashed_password NVARCHAR(255) NOT NULL,  -- Almacenar el hash de la contrase帽a
     password NVARCHAR(255) NOT NULL,
     email NVARCHAR(255) NOT NULL,
     tipo_usuario NVARCHAR(20) NOT NULL, -- Agregado: Tipo de usuario (padre o profesional)
@@ -26,8 +25,8 @@ CREATE TABLE ingreso (
 );
 GO
 
--- Crear la tabla para la informaci髇 del usuario y contrase馻
-CREATE TABLE usuario_contrase馻 (
+-- Crear la tabla para la informaci贸n del usuario y contrase帽a
+CREATE TABLE usuario_contrase帽a (
     id INT PRIMARY KEY,
     username NVARCHAR(255) NOT NULL,
     password NVARCHAR(255) NOT NULL,
@@ -50,13 +49,13 @@ CREATE PROCEDURE RegistrarUsuario
     @tipo_usuario NVARCHAR(20)
 AS
 BEGIN
-    -- Verificar si el tipo de usuario es v醠ido
+    -- Verificar si el tipo de usuario es v谩lido
     IF @tipo_usuario IN ('padre', 'profesional')
     BEGIN
         -- Verificar si el nombre de usuario no existe
         IF NOT EXISTS (SELECT 1 FROM ingreso WHERE username = @username)
         BEGIN
-			 -- Calcular el hash de la contrase馻 y almacenarla
+			 -- Calcular el hash de la contrase帽a y almacenarla
             DECLARE @hashed_password NVARCHAR(255);
             SET @hashed_password = HASHBYTES('SHA2_256', @password);   
 
@@ -68,8 +67,8 @@ BEGIN
             DECLARE @nuevoUsuarioID INT;
             SET @nuevoUsuarioID = SCOPE_IDENTITY();
 
-            -- Insertar en la tabla de usuario_contrase馻
-            INSERT INTO usuario_contrase馻 (id, username, password, 
+            -- Insertar en la tabla de usuario_contrase帽a
+            INSERT INTO usuario_contrase帽a (id, username, password, 
                 pregunta_recuperacion_1, respuesta_recuperacion_1, 
                 pregunta_recuperacion_2, respuesta_recuperacion_2, 
                 pregunta_recuperacion_3, respuesta_recuperacion_3, 
@@ -89,7 +88,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        PRINT 'Error: Tipo de usuario no v醠ido. Debe ser "padre" o "profesional".';
+        PRINT 'Error: Tipo de usuario no v谩lido. Debe ser "padre" o "profesional".';
     END
 END;
 GO
@@ -172,9 +171,9 @@ GO
 
 -- Procedimientos almacenados
 
--- Procedimiento para que un profesional ingrese la informaci髇 de un paciente
+-- Procedimiento para que un profesional ingrese la informaci贸n de un paciente
 CREATE PROCEDURE IngresarInformacionPaciente
-    @profesionalID INT, -- ID del profesional que ingresa la informaci髇
+    @profesionalID INT, -- ID del profesional que ingresa la informaci贸n
     @nombrePaciente NVARCHAR(255),
     @apellidoPaciente NVARCHAR(255),
     @nuevaFechaNacimiento DATE,
@@ -194,11 +193,11 @@ BEGIN
     -- Verifica si el usuario es un profesional
     IF EXISTS (SELECT 1 FROM ingreso WHERE id = @profesionalID AND tipo_usuario = 'profesional')
     BEGIN
-        -- Inserta la informaci髇 del paciente
+        -- Inserta la informaci贸n del paciente
         INSERT INTO pacientes (nombre, apellido, fecha_nacimiento, edad, sexo, diagnostico, padre_id, madre_id, profesional_id, motivo_consulta, escuela_asiste, grado, certificado_discapacidad, obra_social) 
         VALUES (@nombrePaciente, @apellidoPaciente, @nuevaFechaNacimiento, @nuevaEdad, @nuevoSexo, @nuevoDiagnostico, @padre, @madre, @profesionalID, @nuevoMotivoConsulta, @nuevaEscuelaAsiste, @nuevoGrado, @nuevoCertificadoDiscapacidad, @nuevaObraSocial);
 
-        PRINT 'Informaci髇 del paciente ingresada correctamente.';
+        PRINT 'Informaci贸n del paciente ingresada correctamente.';
     END
     ELSE
     BEGIN
@@ -207,7 +206,7 @@ BEGIN
 END;
 GO
 
--- Procedimiento para que un profesional confirme una sesi髇
+-- Procedimiento para que un profesional confirme una sesi贸n
 CREATE PROCEDURE ConfirmarSesionPaciente
     @profesionalID INT,
     @pacienteID INT,
@@ -220,12 +219,12 @@ BEGIN
         -- Verifica si el paciente pertenece al profesional
         IF EXISTS (SELECT 1 FROM agendamiento WHERE paciente_id = @pacienteID AND profesional_id = @profesionalID)
         BEGIN
-            -- Actualiza la confirmaci髇 de la sesi髇
+            -- Actualiza la confirmaci贸n de la sesi贸n
             UPDATE agendamiento
             SET confirmado = @confirmado
             WHERE paciente_id = @pacienteID;
 
-            PRINT 'Sesi髇 confirmada correctamente.';
+            PRINT 'Sesi贸n confirmada correctamente.';
         END
         ELSE
         BEGIN
@@ -239,7 +238,7 @@ BEGIN
 END;
 GO
 
--- Procedimiento para que un padre ingrese su informaci髇 personal y seleccione una sesi髇
+-- Procedimiento para que un padre ingrese su informaci贸n personal y seleccione una sesi贸n
 CREATE PROCEDURE IngresarInformacionPadre
     @padreID INT,
     @nombrePadre NVARCHAR(255),
@@ -247,25 +246,25 @@ CREATE PROCEDURE IngresarInformacionPadre
 	@DNI INT,
     @fecha_nacimiento DATE,
     @zona NVARCHAR (255),
-    @pacienteID INT, -- ID del paciente al que desea asignar una sesi髇
+    @pacienteID INT, -- ID del paciente al que desea asignar una sesi贸n
     @fechaHoraSesion DATETIME
 AS
 BEGIN
     -- Verifica si el usuario es un padre
     IF EXISTS (SELECT 1 FROM ingreso WHERE id = @padreID AND tipo_usuario = 'padre')
     BEGIN
-        -- Inserta la informaci髇 del padre
+        -- Inserta la informaci贸n del padre
         INSERT INTO padre (id, nombre, apellido,DNI, fecha_nacimiento, zona) 
         VALUES (@padreID, @nombrePadre, @apellidoPadre, @DNI, @fecha_nacimiento, @zona);
 
         -- Inserta el registro de usuario
         EXEC RegistrarUsuario @nombrePadre, '', '', 'padre';
 
-        -- Inserta la sesi髇 para el paciente
+        -- Inserta la sesi贸n para el paciente
         INSERT INTO agendamiento (paciente_id, profesional_id, fecha_hora) 
         VALUES (@pacienteID, NULL, @fechaHoraSesion);
 
-        PRINT 'Informaci髇 del padre ingresada correctamente y sesi髇 asignada.';
+        PRINT 'Informaci贸n del padre ingresada correctamente y sesi贸n asignada.';
     END
     ELSE
     BEGIN
@@ -288,7 +287,7 @@ BEGIN
     -- Verifica si el usuario es un padre
     IF EXISTS (SELECT 1 FROM ingreso WHERE id = @usuarioID AND tipo_usuario = 'padre')
     BEGIN
-        -- Inserta los datos personales del padre si a鷑 no existen
+        -- Inserta los datos personales del padre si a煤n no existen
         IF NOT EXISTS (SELECT 1 FROM padre WHERE id = @usuarioID)
         BEGIN
             INSERT INTO padre (id, nombre, apellido, fecha_nacimiento, zona) 
@@ -298,7 +297,7 @@ BEGIN
         -- Verifica si el agendamiento seleccionado pertenece al usuario (padre)
         IF EXISTS (SELECT 1 FROM agendamiento WHERE id = @pacienteID AND paciente_id = @usuarioID)
         BEGIN
-            -- Actualiza la sesi髇 para el paciente
+            -- Actualiza la sesi贸n para el paciente
             UPDATE agendamiento
             SET fecha_hora = @fechaHoraSesion
             WHERE paciente_id = @pacienteID;
