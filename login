@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión / Registrarse</title>
-    <link rel="stylesheet" href="estilo_login.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename= 'estilo_login.css') }}">
+
 </head>
 <body>
 
